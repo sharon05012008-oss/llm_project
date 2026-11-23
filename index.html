@@ -1,0 +1,848 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LLM Playground — Electric Blue Edition | AI Research Laboratory</title>
+  <meta name="description" content="Futuristic AI developer platform for multi-model LLM experimentation, live streaming inference, side-by-side benchmarking, and instant SDK integration." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <!-- Ambient Starfield, Grid & Volumetric Orbs -->
+  <canvas id="starfield-canvas" aria-hidden="true"></canvas>
+  <div class="ambient-grid" aria-hidden="true"></div>
+  <div class="ambient-orb ambient-orb--blue" aria-hidden="true"></div>
+  <div class="ambient-orb ambient-orb--purple" aria-hidden="true"></div>
+  <div class="ambient-orb ambient-orb--cyan" aria-hidden="true"></div>
+
+  <!-- =====================================================================
+       NAVIGATION BAR
+       ===================================================================== -->
+  <header class="navbar" id="navbar">
+    <div class="container navbar-inner">
+      <a href="#top" class="brand" aria-label="LLM Playground Home">
+        <div class="brand-logo" aria-hidden="true">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+            <defs>
+              <linearGradient id="logoGrad" x1="2" y1="2" x2="22" y2="22" gradientUnits="userSpaceOnUse">
+                <stop stop-color="#00E5FF"/>
+                <stop offset="0.55" stop-color="#008CFF"/>
+                <stop offset="1" stop-color="#815BFF"/>
+              </linearGradient>
+            </defs>
+            <path d="M12 2.5L20 7.1V16.9L12 21.5L4 16.9V7.1L12 2.5Z" stroke="url(#logoGrad)" stroke-width="1.8" fill="rgba(0,140,255,0.14)"/>
+            <circle cx="12" cy="12" r="3.2" fill="#00E5FF"/>
+            <path d="M12 2.5V8.8M12 15.2V21.5M4 7.1L9.2 10.2M14.8 13.8L20 16.9M20 7.1L14.8 10.2M9.2 13.8L4 16.9" stroke="url(#logoGrad)" stroke-width="1.3" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <div class="brand-text">
+          <div class="brand-name">LLM <span>Playground</span></div>
+          <div class="brand-sub">Electric Blue Lab</div>
+        </div>
+      </a>
+
+      <nav class="nav-links" id="nav-links" aria-label="Primary Navigation">
+        <a href="#playground" class="nav-link active" data-section="playground">Playground</a>
+        <a href="#models" class="nav-link" data-section="models">Models</a>
+        <a href="#docs" class="nav-link" data-section="docs">Docs</a>
+        <a href="#about" class="nav-link" data-section="about">About</a>
+      </nav>
+
+      <div class="nav-actions">
+        <button class="live-api-pill" id="live-api-btn" type="button" aria-expanded="false" aria-controls="api-popover">
+          <span class="live-dot" aria-hidden="true"></span>
+          <span id="live-api-label">LIVE API</span>
+        </button>
+
+        <button class="cmd-trigger" id="cmd-open-btn" type="button" title="Open Command Palette">
+          <span>⌘K</span>
+        </button>
+
+        <a href="#playground" class="btn btn-primary btn-sm">Launch Studio</a>
+
+        <button class="mobile-menu-btn" id="mobile-menu-btn" type="button" aria-label="Toggle navigation">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M4 7h16M4 12h16M4 17h16" stroke-linecap="round"/>
+          </svg>
+        </button>
+
+        <!-- Live API Telemetry Popover -->
+        <div class="api-popover" id="api-popover" role="dialog" aria-label="Live API Status">
+          <div class="api-popover-head">
+            <div>
+              <div class="api-popover-title">Inference Grid Operational</div>
+              <div style="font-size:0.75rem;color:var(--text-muted);margin-top:2px;">99.99% Uptime · TLS 1.3 Edge Mesh</div>
+            </div>
+            <span style="font-family:var(--font-mono);font-size:0.72rem;color:var(--live-green);">200 OK</span>
+          </div>
+
+          <div class="api-node-list">
+            <div class="api-node">
+              <span class="api-node-name"><span class="live-dot" style="width:6px;height:6px;"></span> US-East · Virginia</span>
+              <span class="api-node-latency" data-base-ms="16">16 ms</span>
+            </div>
+            <div class="api-node">
+              <span class="api-node-name"><span class="live-dot" style="width:6px;height:6px;"></span> EU-West · Frankfurt</span>
+              <span class="api-node-latency" data-base-ms="22">22 ms</span>
+            </div>
+            <div class="api-node">
+              <span class="api-node-name"><span class="live-dot" style="width:6px;height:6px;"></span> AP-East · Tokyo</span>
+              <span class="api-node-latency" data-base-ms="29">29 ms</span>
+            </div>
+          </div>
+
+          <div style="display:flex;gap:8px;">
+            <button class="btn btn-secondary btn-sm" id="open-byok-btn" type="button" style="flex:1;">Connect Live Key</button>
+            <button class="btn btn-ghost btn-sm" id="ping-grid-btn" type="button">Ping</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main id="top">
+    <!-- ===================================================================
+         HERO SECTION — FUTURISTIC 3D AI ROBOT
+         =================================================================== -->
+    <section class="hero">
+      <div class="container hero-grid">
+        <div class="hero-content">
+          <div class="eyebrow">
+            <span class="eyebrow-dot"></span>
+            Next-Gen AI Research Laboratory
+          </div>
+
+          <h1 class="hero-title">
+            Experiment with <span class="gradient-text">Frontier Intelligence</span> in Real Time
+          </h1>
+
+          <p class="hero-description">
+            An electric-blue AI developer workbench built for rapid prompt engineering, token-by-token streaming, side-by-side model comparisons, and one-click SDK code generation.
+          </p>
+
+          <div class="hero-actions">
+            <a href="#playground" class="btn btn-primary">
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                <polygon points="6 3 20 12 6 21 6 3" fill="currentColor" stroke="none"/>
+              </svg>
+              Open Playground
+            </a>
+            <a href="#models" class="btn btn-secondary">
+              Explore Models
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M5 12h14M13 5l7 7-7 7" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </a>
+            <button class="btn btn-ghost" id="hero-compare-btn" type="button">
+              Compare 2 Models
+            </button>
+          </div>
+
+          <div class="hero-metrics">
+            <div class="metric-chip">
+              <div class="metric-value">18<span>ms</span></div>
+              <div class="metric-label">Median TTFT</div>
+            </div>
+            <div class="metric-chip">
+              <div class="metric-value">256<span>K</span></div>
+              <div class="metric-label">Context Window</div>
+            </div>
+            <div class="metric-chip">
+              <div class="metric-value">190<span>t/s</span></div>
+              <div class="metric-label">Stream Velocity</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Center-Right Futuristic 3D AI Robot Stage -->
+        <div class="hero-visual" id="hero-visual">
+          <div class="robot-stage" id="robot-stage">
+            <div class="robot-aura" aria-hidden="true"></div>
+
+            <!-- Glowing Neural Connections SVG -->
+            <svg class="neural-overlay" viewBox="0 0 560 560" aria-hidden="true">
+              <defs>
+                <linearGradient id="neuralGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stop-color="#00E5FF" stop-opacity="0.1"/>
+                  <stop offset="50%" stop-color="#00E5FF" stop-opacity="0.9"/>
+                  <stop offset="100%" stop-color="#008CFF" stop-opacity="0.15"/>
+                </linearGradient>
+                <linearGradient id="neuralGradPurple" x1="100%" y1="0%" x2="0%" y2="100%">
+                  <stop offset="0%" stop-color="#815BFF" stop-opacity="0.15"/>
+                  <stop offset="50%" stop-color="#815BFF" stop-opacity="0.85"/>
+                  <stop offset="100%" stop-color="#00E5FF" stop-opacity="0.2"/>
+                </linearGradient>
+              </defs>
+              <!-- Neural arcs radiating from robot core to HUD nodes -->
+              <path class="neural-path" d="M 280 250 C 210 190, 145 140, 88 106"/>
+              <path class="neural-path neural-path--purple" d="M 280 245 C 360 190, 425 162, 488 138"/>
+              <path class="neural-path" d="M 275 300 C 195 326, 130 356, 76 392"/>
+              <path class="neural-path neural-path--purple" d="M 285 315 C 360 360, 420 398, 480 426"/>
+              <!-- Neural nodes -->
+              <circle cx="88" cy="106" r="4" fill="#00E5FF"/>
+              <circle cx="488" cy="138" r="4" fill="#815BFF"/>
+              <circle cx="76" cy="392" r="4" fill="#008CFF"/>
+              <circle cx="480" cy="426" r="3.5" fill="#00E5FF"/>
+            </svg>
+
+            <!-- Rotating 3D Cyan Holographic Rings -->
+            <div class="holo-rings" aria-hidden="true">
+              <div class="holo-ring holo-ring--outer"></div>
+              <div class="holo-ring holo-ring--mid"></div>
+              <div class="holo-ring holo-ring--inner"></div>
+            </div>
+
+            <!-- Interactive Whisper Pill -->
+            <div class="robot-whisper" id="robot-whisper">NEURAL CORE SYNCED · READY FOR PROMPTS</div>
+
+            <!-- Floating 3D AI Robot -->
+            <div class="robot-float-wrap" id="robot-trigger" role="button" tabindex="0" aria-label="Interact with AI Lab Robot">
+              <div class="robot-image-frame">
+                <img
+                  src="assets/hero-robot.jpg"
+                  alt="Futuristic floating pearl-white and metallic silver 3D AI assistant robot with glowing electric blue eyes and cyan holographic rings"
+                  class="robot-img"
+                />
+              </div>
+            </div>
+
+            <!-- Front Glowing Holographic Sweep -->
+            <div class="holo-front-arc" aria-hidden="true"></div>
+
+            <!-- Floating Holographic Platform Underneath -->
+            <div class="holo-platform" aria-hidden="true">
+              <div class="platform-beam"></div>
+              <div class="platform-disc"></div>
+            </div>
+
+            <!-- Rising Blue Energy Particles Canvas -->
+            <canvas id="robot-particles" aria-hidden="true"></canvas>
+
+            <!-- Floating HUD Telemetry Badges -->
+            <div class="hud-badge hud-badge--top-left">
+              <div class="hud-icon">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4"/>
+                </svg>
+              </div>
+              <div>
+                <div class="hud-label">Neural Core</div>
+                <div class="hud-val">Nebula-4.5 Ultra</div>
+              </div>
+            </div>
+
+            <div class="hud-badge hud-badge--top-right">
+              <div class="hud-icon hud-icon--purple">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+                </svg>
+              </div>
+              <div>
+                <div class="hud-label">Live Stream</div>
+                <div class="hud-val" id="hud-tps">188.4 tok/s</div>
+              </div>
+            </div>
+
+            <div class="hud-badge hud-badge--bottom-left">
+              <div class="hud-icon">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <rect x="3" y="3" width="18" height="18" rx="4"/>
+                  <path d="M9 9h6v6H9z"/>
+                </svg>
+              </div>
+              <div>
+                <div class="hud-label">Precision</div>
+                <div class="hud-val">FP8 · Zero-Loss</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================================================================
+         INTERACTIVE LLM PLAYGROUND WORKBENCH
+         =================================================================== -->
+    <section class="playground-section" id="playground">
+      <div class="container">
+        <div class="playground-topbar">
+          <div>
+            <div class="eyebrow" style="margin-bottom:10px;">
+              <span class="eyebrow-dot"></span>
+              Interactive Inference Workbench
+            </div>
+            <h2 class="section-title" style="margin-bottom:4px;">LLM Studio <span class="gradient-text">Playground</span></h2>
+          </div>
+
+          <div class="playground-toolbar-actions">
+            <div class="mode-tabs" role="tablist" aria-label="Playground Mode">
+              <button class="mode-tab active" id="tab-single" role="tab" aria-selected="true" type="button">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <rect x="3" y="4" width="18" height="16" rx="3"/>
+                </svg>
+                Single Studio
+              </button>
+              <button class="mode-tab" id="tab-compare" role="tab" aria-selected="false" type="button">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <rect x="3" y="4" width="8" height="16" rx="2"/>
+                  <rect x="13" y="4" width="8" height="16" rx="2"/>
+                </svg>
+                Side-by-Side Compare
+              </button>
+            </div>
+
+            <button class="btn btn-secondary btn-sm" id="export-code-btn" type="button">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/>
+              </svg>
+              View Code
+            </button>
+            <button class="btn btn-ghost btn-sm" id="clear-chat-btn" type="button">Clear</button>
+          </div>
+        </div>
+
+        <div class="playground-shell">
+          <!-- Main Chat / Compare Panel -->
+          <div class="glass-card workbench-main" id="workbench-main">
+            <!-- Preset Prompts -->
+            <div class="preset-bar">
+              <span class="preset-label">Presets</span>
+              <button class="preset-chip" data-preset="attention" type="button">Transformer FlashAttention</button>
+              <button class="preset-chip" data-preset="rust" type="button">Async Rust Web Scraper</button>
+              <button class="preset-chip" data-preset="ratelimit" type="button">Distributed Rate Limiter</button>
+              <button class="preset-chip" data-preset="sql" type="button">Optimize Postgres Query</button>
+              <button class="preset-chip" data-preset="json" type="button">Extract Structured JSON</button>
+            </div>
+
+            <!-- Collapsible System Prompt -->
+            <div class="system-prompt-bar" id="system-prompt-bar">
+              <button class="system-prompt-toggle" id="system-prompt-toggle" type="button">
+                <span style="display:inline-flex;align-items:center;gap:8px;">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#00E5FF" stroke-width="2">
+                    <circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33h.01a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51h.01a1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82v.01a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+                  </svg>
+                  System Instructions
+                  <span id="persona-badge" class="msg-badge" style="font-size:0.66rem;">AI Research Engineer</span>
+                </span>
+                <span id="system-chevron" style="font-family:var(--font-mono);font-size:0.75rem;color:var(--neon-cyan);">Expand ▾</span>
+              </button>
+              <div class="system-prompt-body">
+                <div class="persona-pills">
+                  <button class="persona-pill active" data-persona="research" type="button">AI Research Engineer</button>
+                  <button class="persona-pill" data-persona="architect" type="button">Principal Systems Architect</button>
+                  <button class="persona-pill" data-persona="reviewer" type="button">Strict Code Reviewer</button>
+                  <button class="persona-pill" data-persona="concise" type="button">Ultra-Concise Mode</button>
+                </div>
+                <textarea id="system-prompt-input" class="system-textarea">You are Nebula, a principal AI research engineer inside the Electric Blue LLM Playground. Provide technically rigorous, clean, well-structured answers with production-ready code examples and clear complexity trade-offs.</textarea>
+              </div>
+            </div>
+
+            <!-- Compare Mode Header -->
+            <div class="compare-header">
+              <div class="compare-select-box">
+                <span class="compare-tag">MODEL A</span>
+                <select id="compare-model-a" class="styled-select" style="padding:6px 30px 6px 10px;font-size:0.82rem;"></select>
+              </div>
+              <div class="compare-select-box">
+                <span class="compare-tag compare-tag--b">MODEL B</span>
+                <select id="compare-model-b" class="styled-select" style="padding:6px 30px 6px 10px;font-size:0.82rem;"></select>
+              </div>
+            </div>
+
+            <!-- Single Mode Chat Stream -->
+            <div class="chat-viewport" id="chat-viewport" aria-live="polite"></div>
+
+            <!-- Compare Mode Dual Stream -->
+            <div class="compare-viewport" id="compare-viewport" aria-live="polite">
+              <div class="compare-pane" id="compare-pane-a">
+                <div class="compare-pane-meta">
+                  <span id="compare-meta-name-a" style="color:var(--neon-cyan);font-weight:600;">Nebula-4.5 Ultra</span>
+                  <span id="compare-meta-stats-a">Ready</span>
+                </div>
+                <div id="compare-output-a" class="md-body" style="font-size:0.9rem;color:var(--text-secondary);">
+                  Run any prompt below to benchmark Model A and Model B head-to-head in real time.
+                </div>
+              </div>
+              <div class="compare-pane compare-pane--b" id="compare-pane-b">
+                <div class="compare-pane-meta">
+                  <span id="compare-meta-name-b" style="color:#C2A8FF;font-weight:600;">Volt-3.5 Flash</span>
+                  <span id="compare-meta-stats-b">Ready</span>
+                </div>
+                <div id="compare-output-b" class="md-body" style="font-size:0.9rem;color:var(--text-secondary);">
+                  Side-by-side streaming reveals latency, token throughput, and reasoning depth simultaneously.
+                </div>
+              </div>
+            </div>
+
+            <!-- Prompt Composer -->
+            <div class="composer-wrap">
+              <div class="composer-box">
+                <textarea
+                  id="prompt-input"
+                  class="composer-input"
+                  placeholder="Ask anything — explain FlashAttention-3, design an architecture, write Rust/TypeScript, or test structured JSON..."
+                  rows="2"
+                ></textarea>
+                <div class="composer-footer">
+                  <div class="composer-hints">
+                    <span id="input-token-count">0 tokens</span>
+                    <span>·</span>
+                    <span id="active-engine-badge" style="color:var(--neon-cyan);">Simulated Edge Engine</span>
+                  </div>
+                  <div class="composer-buttons">
+                    <button class="btn btn-sm btn-stop" id="stop-btn" type="button">Stop</button>
+                    <button class="btn btn-primary btn-sm" id="run-prompt-btn" type="button">
+                      Run Prompt
+                      <span style="opacity:0.8;font-family:var(--font-mono);font-size:0.74rem;">⌘↵</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Right Parameter & Telemetry Sidebar -->
+          <aside class="workbench-sidebar">
+            <div class="glass-card sidebar-card">
+              <div class="sidebar-heading">
+                <span>Model Parameters</span>
+                <button class="btn-ghost" id="reset-params-btn" type="button" style="padding:4px 9px;font-size:0.72rem;">Reset</button>
+              </div>
+
+              <div class="control-group">
+                <div class="control-label-row">
+                  <label for="model-select">Active Model</label>
+                  <span id="model-ctx-pill" class="control-value">256K ctx</span>
+                </div>
+                <select id="model-select" class="styled-select"></select>
+              </div>
+
+              <div class="control-group">
+                <div class="control-label-row">
+                  <label for="param-temp">Temperature</label>
+                  <span id="val-temp" class="control-value">0.70</span>
+                </div>
+                <input type="range" id="param-temp" class="neon-range" min="0" max="2" step="0.05" value="0.7" />
+              </div>
+
+              <div class="control-group">
+                <div class="control-label-row">
+                  <label for="param-max-tokens">Max Tokens</label>
+                  <span id="val-max-tokens" class="control-value">2048</span>
+                </div>
+                <input type="range" id="param-max-tokens" class="neon-range" min="128" max="8192" step="128" value="2048" />
+              </div>
+
+              <div class="control-group">
+                <div class="control-label-row">
+                  <label for="param-top-p">Top P</label>
+                  <span id="val-top-p" class="control-value">0.95</span>
+                </div>
+                <input type="range" id="param-top-p" class="neon-range" min="0.05" max="1" step="0.05" value="0.95" />
+              </div>
+
+              <div class="control-group">
+                <div class="control-label-row">
+                  <label for="param-freq">Frequency Penalty</label>
+                  <span id="val-freq" class="control-value">0.00</span>
+                </div>
+                <input type="range" id="param-freq" class="neon-range" min="0" max="2" step="0.1" value="0" />
+              </div>
+
+              <div style="border-top:1px solid rgba(0,140,255,0.16);margin-top:14px;padding-top:10px;">
+                <div class="toggle-row">
+                  <span>Stream Response</span>
+                  <label class="switch">
+                    <input type="checkbox" id="toggle-stream" checked />
+                    <span class="switch-slider"></span>
+                  </label>
+                </div>
+                <div class="toggle-row">
+                  <span>Show Thinking Trace</span>
+                  <label class="switch">
+                    <input type="checkbox" id="toggle-thinking" checked />
+                    <span class="switch-slider"></span>
+                  </label>
+                </div>
+                <div class="toggle-row">
+                  <span>Strict JSON Output</span>
+                  <label class="switch">
+                    <input type="checkbox" id="toggle-json" />
+                    <span class="switch-slider"></span>
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            <!-- Live Telemetry & Tokenizer Card -->
+            <div class="glass-card sidebar-card">
+              <div class="sidebar-heading" style="margin-bottom:12px;">
+                <span>Live Telemetry</span>
+                <span style="font-family:var(--font-mono);font-size:0.7rem;color:var(--live-green);">● SYNCED</span>
+              </div>
+
+              <div class="telemetry-grid">
+                <div class="telemetry-box">
+                  <div class="telemetry-k">TTFT</div>
+                  <div class="telemetry-v" id="tel-ttft">18 <span>ms</span></div>
+                </div>
+                <div class="telemetry-box">
+                  <div class="telemetry-k">Throughput</div>
+                  <div class="telemetry-v" id="tel-tps">184 <span>t/s</span></div>
+                </div>
+                <div class="telemetry-box">
+                  <div class="telemetry-k">Session Tokens</div>
+                  <div class="telemetry-v" id="tel-tokens">342</div>
+                </div>
+                <div class="telemetry-box">
+                  <div class="telemetry-k">Est. Cost</div>
+                  <div class="telemetry-v" id="tel-cost">$0.0004</div>
+                </div>
+              </div>
+
+              <div class="control-label-row" style="margin-bottom:6px;">
+                <span style="font-size:0.76rem;color:var(--text-muted);">Live Input Tokenizer</span>
+                <span id="tok-chunk-count" style="font-family:var(--font-mono);font-size:0.7rem;color:var(--neon-cyan);">0 chunks</span>
+              </div>
+              <div class="token-preview" id="token-preview">
+                <span style="font-size:0.76rem;color:var(--text-muted);">Type a prompt to inspect token splits...</span>
+              </div>
+            </div>
+          </aside>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================================================================
+         MODELS OBSERVATORY
+         =================================================================== -->
+    <section id="models">
+      <div class="container">
+        <div class="section-header">
+          <div class="eyebrow">
+            <span class="eyebrow-dot"></span>
+            Model Observatory
+          </div>
+          <h2 class="section-title">Unified Routing Across <span class="gradient-text">Frontier Models</span></h2>
+          <p class="section-subtitle">
+            Switch between reasoning powerhouses, ultra-low-latency flash models, and specialized code engines with a single parameter change.
+          </p>
+        </div>
+
+        <div class="filter-pills" id="model-filters">
+          <button class="filter-pill active" data-filter="all" type="button">All Models</button>
+          <button class="filter-pill" data-filter="reasoning" type="button">Reasoning</button>
+          <button class="filter-pill" data-filter="coding" type="button">Coding</button>
+          <button class="filter-pill" data-filter="fast" type="button">Ultra-Fast</button>
+          <button class="filter-pill" data-filter="multimodal" type="button">Multimodal</button>
+        </div>
+
+        <div class="models-grid" id="models-grid"></div>
+
+        <!-- Intelligence vs Throughput Visual Benchmark -->
+        <div class="glass-card benchmark-panel">
+          <div class="benchmark-panel-head">
+            <div>
+              <h3 style="font-family:var(--font-display);font-size:1.18rem;font-weight:700;">Intelligence vs. Streaming Velocity</h3>
+              <p style="font-size:0.86rem;color:var(--text-secondary);margin-top:3px;">Click any model node on the Pareto frontier to load it directly into the Playground.</p>
+            </div>
+            <div class="benchmark-legend">
+              <span class="legend-item"><span class="legend-dot" style="background:#00E5FF;box-shadow:0 0 10px #00E5FF;"></span> Frontier / Omni</span>
+              <span class="legend-item"><span class="legend-dot" style="background:#815BFF;box-shadow:0 0 10px #815BFF;"></span> Reasoning</span>
+              <span class="legend-item"><span class="legend-dot" style="background:#008CFF;box-shadow:0 0 10px #008CFF;"></span> Coding</span>
+              <span class="legend-item"><span class="legend-dot" style="background:#10F5A0;box-shadow:0 0 10px #10F5A0;"></span> Low Latency</span>
+            </div>
+          </div>
+          <div class="scatter-wrap">
+            <svg id="benchmark-scatter" class="scatter-svg" viewBox="0 0 920 260" role="img" aria-label="Model benchmark scatter plot"></svg>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================================================================
+         INTERACTIVE DEVELOPER DOCS
+         =================================================================== -->
+    <section id="docs">
+      <div class="container">
+        <div class="section-header">
+          <div class="eyebrow">
+            <span class="eyebrow-dot"></span>
+            Developer Documentation
+          </div>
+          <h2 class="section-title">Ship to Production in <span class="gradient-text">Minutes</span></h2>
+          <p class="section-subtitle">
+            Drop-in OpenAI-compatible REST &amp; streaming SSE API with deterministic JSON schemas, tool calling, and zero-config failover.
+          </p>
+        </div>
+
+        <div class="docs-grid">
+          <div class="glass-card docs-nav" id="docs-nav">
+            <button class="docs-nav-btn active" data-doc="quickstart" type="button">Quickstart <span>→</span></button>
+            <button class="docs-nav-btn" data-doc="streaming" type="button">Streaming SSE <span>→</span></button>
+            <button class="docs-nav-btn" data-doc="structured" type="button">Structured JSON <span>→</span></button>
+            <button class="docs-nav-btn" data-doc="tools" type="button">Function Calling <span>→</span></button>
+            <button class="docs-nav-btn" data-doc="compare" type="button">Multi-Model Eval <span>→</span></button>
+            <button class="docs-nav-btn" data-doc="limits" type="button">Rate Limits &amp; Auth <span>→</span></button>
+          </div>
+
+          <div class="glass-card docs-stage">
+            <div class="docs-stage-head">
+              <div>
+                <h3 id="docs-title" style="font-family:var(--font-display);font-size:1.34rem;font-weight:700;margin-bottom:6px;">Quickstart</h3>
+                <p id="docs-desc" style="font-size:0.9rem;color:var(--text-secondary);max-width:600px;"></p>
+              </div>
+              <div class="docs-endpoint-pill" id="docs-endpoint"><span>POST</span>/v1/chat/completions</div>
+            </div>
+
+            <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:10px;">
+              <div class="lang-tabs" id="docs-lang-tabs" style="margin-bottom:0;">
+                <button class="lang-tab active" data-lang="python" type="button">Python</button>
+                <button class="lang-tab" data-lang="typescript" type="button">TypeScript</button>
+                <button class="lang-tab" data-lang="curl" type="button">cURL</button>
+              </div>
+              <div style="display:flex;gap:8px;">
+                <button class="btn btn-ghost btn-sm" id="docs-copy-btn" type="button">Copy Snippet</button>
+                <button class="btn btn-primary btn-sm" id="docs-try-btn" type="button">Simulate Request</button>
+              </div>
+            </div>
+
+            <div class="code-block" style="margin-top:0;">
+              <pre id="docs-code"></pre>
+            </div>
+
+            <div class="docs-console">
+              <div class="docs-console-head">
+                <span id="docs-console-status">LIVE RESPONSE SANDBOX · READY</span>
+                <span id="docs-console-latency" style="color:var(--live-green);">200 OK · 19ms</span>
+              </div>
+              <pre id="docs-response"></pre>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================================================================
+         ABOUT THE LAB
+         =================================================================== -->
+    <section id="about">
+      <div class="container">
+        <div class="section-header section-header--center">
+          <div class="eyebrow">
+            <span class="eyebrow-dot"></span>
+            Inside the Laboratory
+          </div>
+          <h2 class="section-title">Engineered for <span class="gradient-text">AI Researchers &amp; Builders</span></h2>
+          <p class="section-subtitle">
+            Every millisecond, token probability, and routing decision is transparent — designed to accelerate frontier product engineering.
+          </p>
+        </div>
+
+        <div class="about-grid">
+          <div class="glass-card pillar-card">
+            <div class="pillar-icon">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+              </svg>
+            </div>
+            <h3 class="pillar-title">Sub-20ms Edge Routing</h3>
+            <p class="pillar-desc">Speculative decoding and tensor-parallel GPU clusters keep time-to-first-token razor fast across global regions.</p>
+          </div>
+
+          <div class="glass-card pillar-card">
+            <div class="pillar-icon pillar-icon--purple">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+              </svg>
+            </div>
+            <h3 class="pillar-title">Zero-Retention Privacy</h3>
+            <p class="pillar-desc">Prompts and completions stay ephemeral by default. Connect your own API keys directly from the browser with zero proxy storage.</p>
+          </div>
+
+          <div class="glass-card pillar-card">
+            <div class="pillar-icon">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/>
+              </svg>
+            </div>
+            <h3 class="pillar-title">Real-Time Observability</h3>
+            <p class="pillar-desc">Inspect token chunks, cost estimates, thinking traces, and head-to-head model throughput on every single generation.</p>
+          </div>
+
+          <div class="glass-card pillar-card">
+            <div class="pillar-icon pillar-icon--purple">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/>
+              </svg>
+            </div>
+            <h3 class="pillar-title">Instant SDK Export</h3>
+            <p class="pillar-desc">Every tweak to temperature, system prompt, or JSON schema compiles live into ready-to-paste Python, TypeScript, and cURL code.</p>
+          </div>
+        </div>
+
+        <div class="glass-card edge-mesh-card">
+          <div>
+            <div class="eyebrow" style="margin-bottom:12px;">
+              <span class="eyebrow-dot"></span>
+              Global Inference Mesh
+            </div>
+            <h3 style="font-family:var(--font-display);font-size:1.55rem;font-weight:700;margin-bottom:10px;">
+              Always-On Multi-Region GPU Fabric
+            </h3>
+            <p style="font-size:0.93rem;color:var(--text-secondary);margin-bottom:20px;">
+              Automatic health-checked failover routes traffic around congestion so streaming sessions stay fluid even under heavy batch evaluation loads.
+            </p>
+            <div style="display:flex;gap:12px;flex-wrap:wrap;">
+              <a href="#playground" class="btn btn-primary btn-sm">Start Experimenting</a>
+              <button class="btn btn-secondary btn-sm" id="about-byok-btn" type="button">Configure Live API</button>
+            </div>
+          </div>
+
+          <div class="edge-nodes">
+            <div class="edge-node-card">
+              <div>
+                <div class="edge-region">US-East (IAD)</div>
+                <div class="edge-sub">H200 Tensor Cluster</div>
+              </div>
+              <div class="edge-ms">16 ms</div>
+            </div>
+            <div class="edge-node-card">
+              <div>
+                <div class="edge-region">US-West (SJC)</div>
+                <div class="edge-sub">B200 Liquid Fabric</div>
+              </div>
+              <div class="edge-ms">19 ms</div>
+            </div>
+            <div class="edge-node-card">
+              <div>
+                <div class="edge-region">EU-Central (FRA)</div>
+                <div class="edge-sub">GDPR Sovereign Node</div>
+              </div>
+              <div class="edge-ms">22 ms</div>
+            </div>
+            <div class="edge-node-card">
+              <div>
+                <div class="edge-region">AP-Northeast (TYO)</div>
+                <div class="edge-sub">Ultra-Low Latency Edge</div>
+              </div>
+              <div class="edge-ms">28 ms</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- =====================================================================
+       FOOTER
+       ===================================================================== -->
+  <footer class="footer">
+    <div class="container footer-inner">
+      <a href="#top" class="brand">
+        <div class="brand-logo" style="width:34px;height:34px;">
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="none">
+            <path d="M12 2.5L20 7.1V16.9L12 21.5L4 16.9V7.1L12 2.5Z" stroke="#00E5FF" stroke-width="1.8"/>
+            <circle cx="12" cy="12" r="3" fill="#00E5FF"/>
+          </svg>
+        </div>
+        <div class="brand-text">
+          <div class="brand-name" style="font-size:1rem;">LLM <span>Playground</span></div>
+          <div class="brand-sub">Electric Blue Edition</div>
+        </div>
+      </a>
+
+      <div class="footer-links">
+        <a href="#playground">Playground</a>
+        <a href="#models">Models</a>
+        <a href="#docs">API Docs</a>
+        <a href="#about">About Lab</a>
+      </div>
+
+      <div class="footer-copy">
+        Press <code style="font-family:var(--font-mono);color:var(--neon-cyan);">⌘K</code> anytime · Electric Blue Research Lab
+      </div>
+    </div>
+  </footer>
+
+  <!-- =====================================================================
+       MODAL: EXPORT CODE SNIPPET
+       ===================================================================== -->
+  <div class="modal-backdrop" id="code-modal" role="dialog" aria-modal="true" aria-labelledby="code-modal-title">
+    <div class="modal-dialog">
+      <div class="modal-head">
+        <div>
+          <h3 class="modal-title" id="code-modal-title">Export Playground Request</h3>
+          <p style="font-size:0.82rem;color:var(--text-secondary);margin-top:2px;">Synced with your current model, temperature, system prompt, and latest message.</p>
+        </div>
+        <button class="modal-close" data-close-modal="code-modal" type="button" aria-label="Close">×</button>
+      </div>
+
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+        <div class="lang-tabs" id="export-lang-tabs" style="margin-bottom:0;">
+          <button class="lang-tab active" data-export-lang="python" type="button">Python</button>
+          <button class="lang-tab" data-export-lang="typescript" type="button">TypeScript</button>
+          <button class="lang-tab" data-export-lang="curl" type="button">cURL</button>
+        </div>
+        <button class="btn btn-primary btn-sm" id="copy-export-btn" type="button">Copy Code</button>
+      </div>
+
+      <div class="code-block" style="margin:0;">
+        <pre id="export-code-pre" style="max-height:340px;"></pre>
+      </div>
+    </div>
+  </div>
+
+  <!-- =====================================================================
+       MODAL: CONNECT LIVE API (BYOK)
+       ===================================================================== -->
+  <div class="modal-backdrop" id="byok-modal" role="dialog" aria-modal="true" aria-labelledby="byok-modal-title">
+    <div class="modal-dialog">
+      <div class="modal-head">
+        <div>
+          <h3 class="modal-title" id="byok-modal-title">Connect Live OpenAI-Compatible API</h3>
+          <p style="font-size:0.82rem;color:var(--text-secondary);margin-top:2px;">Optional: route Playground prompts directly from your browser to any live OpenAI-compatible endpoint.</p>
+        </div>
+        <button class="modal-close" data-close-modal="byok-modal" type="button" aria-label="Close">×</button>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:14px;">
+        <div>
+          <label for="byok-endpoint" style="display:block;font-size:0.8rem;color:var(--text-secondary);margin-bottom:6px;">API Base URL</label>
+          <input id="byok-endpoint" class="field-input" type="url" placeholder="https://api.openai.com/v1/chat/completions" value="https://api.openai.com/v1/chat/completions" />
+        </div>
+        <div>
+          <label for="byok-model" style="display:block;font-size:0.8rem;color:var(--text-secondary);margin-bottom:6px;">Remote Model ID</label>
+          <input id="byok-model" class="field-input" type="text" placeholder="gpt-4o-mini" value="gpt-4o-mini" />
+        </div>
+        <div>
+          <label for="byok-key" style="display:block;font-size:0.8rem;color:var(--text-secondary);margin-bottom:6px;">API Key (stored locally in this browser only)</label>
+          <input id="byok-key" class="field-input" type="password" placeholder="sk-..." autocomplete="off" />
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:6px;">
+          <button class="btn btn-ghost btn-sm" id="byok-disconnect-btn" type="button">Use Built-in Simulator</button>
+          <button class="btn btn-primary btn-sm" id="byok-save-btn" type="button">Enable Live API</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- =====================================================================
+       MODAL: COMMAND PALETTE (⌘K)
+       ===================================================================== -->
+  <div class="modal-backdrop" id="cmd-modal" role="dialog" aria-modal="true" aria-label="Command Palette">
+    <div class="modal-dialog cmd-dialog">
+      <input id="cmd-input" class="field-input" type="text" placeholder="Type a command, model, or section..." autocomplete="off" />
+      <div class="cmd-list" id="cmd-list"></div>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script src="app.js"></script>
+</body>
+</html>
